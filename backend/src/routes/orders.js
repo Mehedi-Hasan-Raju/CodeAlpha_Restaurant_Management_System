@@ -9,6 +9,7 @@ require('../utils/idParam')(router);
 
 router.use(authenticate);
 const staff = requireRole('ADMIN', 'CASHIER');
+const orderAccess = requireRole('ADMIN', 'KITCHEN');
 
 const TYPES = ['DINE_IN', 'TAKEAWAY', 'DELIVERY'];
 const STATUSES = ['NEW', 'PREPARING', 'READY', 'SERVED', 'CANCELLED'];
@@ -129,7 +130,7 @@ router.post('/', staff, asyncHandler(async (req, res) => {
 }));
 
 // List with filters. status can be one value or several: ?status=NEW,PREPARING
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', orderAccess, asyncHandler(async (req, res) => {
   const { status, type, date, tableId } = req.query;
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
   const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 50));
@@ -154,22 +155,22 @@ router.get('/', asyncHandler(async (req, res) => {
   res.json({ data: rows.map(fmt), total, page, limit });
 }));
 
-router.get('/:id', asyncHandler(async (req, res) => {
+router.get('/:id', orderAccess, asyncHandler(async (req, res) => {
   const o = await prisma.order.findUnique({ where: { id: req.id }, include });
   if (!o) return res.status(404).json({ error: 'Order not found' });
   res.json(fmt(o));
 }));
 
-// Kitchen, cashier and admin can move an order forward. Only admin or cashier can cancel.
-router.patch('/:id/status', asyncHandler(async (req, res) => {
+// Kitchen and admin can move an order forward. Only admin can cancel.
+router.patch('/:id/status', orderAccess, asyncHandler(async (req, res) => {
   const { status } = req.body || {};
   if (!STATUSES.includes(status)) return res.status(400).json({ error: 'status must be one of ' + STATUSES.join(', ') });
 
   const o = await prisma.order.findUnique({ where: { id: req.id } });
   if (!o) return res.status(404).json({ error: 'Order not found' });
   if (!FLOW[o.status].includes(status)) return res.status(400).json({ error: `Cannot change ${o.status} to ${status}` });
-  if (status === 'CANCELLED' && !['ADMIN', 'CASHIER'].includes(req.user.role))
-    return res.status(403).json({ error: 'Only admin or cashier can cancel an order' });
+  if (status === 'CANCELLED' && req.user.role !== 'ADMIN')
+    return res.status(403).json({ error: 'Only admin can cancel an order' });
 
   const updated = await prisma.$transaction(async (tx) => {
     const u = await tx.order.update({ where: { id: o.id }, data: { status }, include });

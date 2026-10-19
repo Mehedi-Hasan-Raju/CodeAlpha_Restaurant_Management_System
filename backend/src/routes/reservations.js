@@ -5,9 +5,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const { authenticate, requireRole } = require('../middleware/auth');
 require('../utils/idParam')(router);
 
-router.use(authenticate);
+router.use(authenticate, requireRole('ADMIN'));
 const adminOnly = requireRole('ADMIN');
-const staff = requireRole('ADMIN', 'CASHIER');
 
 const STATUSES = ['UPCOMING', 'SEATED', 'COMPLETED', 'CANCELLED'];
 const posInt = (v) => Number.isInteger(Number(v)) && Number(v) >= 1;
@@ -76,7 +75,7 @@ router.get('/', asyncHandler(async (req, res) => {
   res.json(rows.map(fmt));
 }));
 
-router.post('/', staff, asyncHandler(async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
   const { data, error } = parse(req.body || {}, true);
   if (error) return res.status(400).json({ error });
   const problem = await check({ ...data, durationMin: data.durationMin || 90 });
@@ -85,7 +84,7 @@ router.post('/', staff, asyncHandler(async (req, res) => {
 }));
 
 // Edit details (guest, time, table...). To change the status use PATCH /:id/status
-router.put('/:id', staff, asyncHandler(async (req, res) => {
+router.put('/:id', asyncHandler(async (req, res) => {
   const { data, error } = parse(req.body || {}, false);
   if (error) return res.status(400).json({ error });
   const old = await prisma.reservation.findUnique({ where: { id: req.id } });
@@ -96,7 +95,7 @@ router.put('/:id', staff, asyncHandler(async (req, res) => {
 }));
 
 // Status change also updates the table:  SEATED -> OCCUPIED,  COMPLETED -> CLEANING,  CANCELLED -> frees a RESERVED table
-router.patch('/:id/status', staff, asyncHandler(async (req, res) => {
+router.patch('/:id/status', asyncHandler(async (req, res) => {
   const { status } = req.body || {};
   if (!STATUSES.includes(status)) return res.status(400).json({ error: 'status must be one of ' + STATUSES.join(', ') });
   const r = await prisma.reservation.findUnique({ where: { id: req.id } });

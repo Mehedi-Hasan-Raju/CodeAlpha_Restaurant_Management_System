@@ -7,7 +7,7 @@ export default function Page() {
   if (!dashboard) {
     return <>
       <h1>Dashboard</h1>
-      <p className="sub">{loading || !dashboardError && dataLoaded ? 'Loading dashboard...' : dashboardError || 'Connect to the API to load dashboard data.'}</p>
+      <p className="sub">{loading || !dashboardError && !dataLoaded ? 'Loading dashboard...' : dashboardError || 'Connect to the API to load dashboard data.'}</p>
     </>;
   }
 

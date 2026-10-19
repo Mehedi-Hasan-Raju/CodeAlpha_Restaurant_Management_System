@@ -6,7 +6,7 @@ const { num, isNum } = require('../utils/format');
 const { emit } = require('../realtime');
 require('../utils/idParam')(router);
 
-router.use(authenticate);
+router.use(authenticate, requireRole('ADMIN'));
 const adminOnly = requireRole('ADMIN');
 
 const UNITS = ['kg', 'g', 'ltr', 'ml', 'pcs', 'pack'];
@@ -106,7 +106,7 @@ router.put('/:id', adminOnly, asyncHandler(async (req, res) => {
 }));
 
 // The +/- buttons. Body: { "delta": 5 } to add, { "delta": -2 } to use.
-router.patch('/:id/adjust', asyncHandler(async (req, res) => {
+router.patch('/:id/adjust', adminOnly, asyncHandler(async (req, res) => {
   const { delta } = req.body || {};
   if (!isNum(delta) || Number(delta) === 0 || Math.abs(Number(delta)) > LIMIT || !dec2(delta))
     return res.status(400).json({ error: `delta must be a non-zero number (max 2 decimals, up to ${LIMIT})` });

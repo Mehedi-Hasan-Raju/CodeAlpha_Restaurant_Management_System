@@ -7,7 +7,6 @@ require('../utils/idParam')(router);
 
 router.use(authenticate);
 const adminOnly = requireRole('ADMIN');
-const staff = requireRole('ADMIN', 'CASHIER');
 
 const STATUSES = ['AVAILABLE', 'OCCUPIED', 'RESERVED', 'CLEANING'];
 const posInt = (v) => Number.isInteger(Number(v)) && Number(v) >= 1;
@@ -72,7 +71,7 @@ router.put('/:id', adminOnly, asyncHandler(async (req, res) => {
 }));
 
 // Cashier or admin changes only the status (seat a guest, mark cleaning, mark available)
-router.patch('/:id/status', staff, asyncHandler(async (req, res) => {
+router.patch('/:id/status', adminOnly, asyncHandler(async (req, res) => {
   const { status } = req.body || {};
   if (!STATUSES.includes(status)) return res.status(400).json({ error: 'status must be one of ' + STATUSES.join(', ') });
   const t = await prisma.diningTable.update({ where: { id: req.id }, data: { status } });

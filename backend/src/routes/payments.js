@@ -7,7 +7,7 @@ const { num, isNum } = require('../utils/format');
 const { cents, paidCents, syncInvoice, lockInvoice } = require('../utils/billing');
 require('../utils/idParam')(router);
 
-router.use(authenticate, requireRole('ADMIN', 'CASHIER'));
+router.use(authenticate, requireRole('ADMIN'));
 
 const METHODS = ['CARD', 'UPI', 'CASH', 'ONLINE'];
 const STATUSES = ['COMPLETED', 'PENDING', 'FAILED', 'REFUNDED'];

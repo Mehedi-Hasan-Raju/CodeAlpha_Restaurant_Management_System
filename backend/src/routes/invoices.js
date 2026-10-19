@@ -7,7 +7,7 @@ const { num } = require('../utils/format');
 const { cents, paidCents } = require('../utils/billing');
 require('../utils/idParam')(router);
 
-router.use(authenticate, requireRole('ADMIN', 'CASHIER'));
+router.use(authenticate, requireRole('ADMIN'));
 const adminOnly = requireRole('ADMIN');
 
 const STATUSES = ['PAID', 'PENDING', 'CANCELLED'];

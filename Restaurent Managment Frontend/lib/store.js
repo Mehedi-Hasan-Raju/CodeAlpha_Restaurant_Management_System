@@ -59,11 +59,12 @@ export function Store({ children }) {
     setTimeout(() => setMsg(''), 2500);
   }, []);
 
-  const refreshData = useCallback(async activeToken => {
+  const refreshData = useCallback(async (activeToken, activeRole = user?.role) => {
     setLoading(true);
-    setDataLoaded(false);
     setDataError('');
     try {
+      const isAdmin = activeRole === 'ADMIN';
+      const canViewOrders = isAdmin || activeRole === 'KITCHEN';
       const [
         categories, menu, addons, coupons, tables, customers, reservations,
         orderResult, invoiceResult, paymentResult, inventoryResult,
@@ -73,12 +74,12 @@ export function Store({ children }) {
         apiRequest('/addons', { token: activeToken }),
         apiRequest('/coupons', { token: activeToken }),
         apiRequest('/tables', { token: activeToken }),
-        apiRequest('/customers', { token: activeToken }),
-        apiRequest('/reservations', { token: activeToken }),
-        apiRequest('/orders?limit=100', { token: activeToken }),
-        apiRequest('/invoices?limit=100', { token: activeToken }),
-        apiRequest('/payments?limit=100', { token: activeToken }),
-        apiRequest('/inventory', { token: activeToken }),
+        isAdmin ? apiRequest('/customers', { token: activeToken }) : Promise.resolve([]),
+        isAdmin ? apiRequest('/reservations', { token: activeToken }) : Promise.resolve([]),
+        canViewOrders ? apiRequest('/orders?limit=100', { token: activeToken }) : Promise.resolve({ data: [] }),
+        isAdmin ? apiRequest('/invoices?limit=100', { token: activeToken }) : Promise.resolve({ data: [] }),
+        isAdmin ? apiRequest('/payments?limit=100', { token: activeToken }) : Promise.resolve({ data: [] }),
+        isAdmin ? apiRequest('/inventory', { token: activeToken }) : Promise.resolve({ data: [] }),
       ]);
       const orderRows = orderResult.data;
       const invoiceRows = invoiceResult.data;
@@ -145,17 +146,21 @@ export function Store({ children }) {
       setOrders(orderRows.map(apiOrder));
       setDataLoaded(true);
       setDataError('');
-      apiRequest('/dashboard', { token: activeToken })
-        .then(result => {
-          setDashboard(result);
-          setDashboardError('');
-        })
-        .catch(error => {
-          setDashboard(null);
-          setDashboardError(error.message);
-        });
+      if (isAdmin) {
+        apiRequest('/dashboard', { token: activeToken })
+          .then(result => {
+            setDashboard(result);
+            setDashboardError('');
+          })
+          .catch(error => {
+            setDashboard(null);
+            setDashboardError(error.message);
+          });
+      } else {
+        setDashboard(null);
+        setDashboardError('');
+      }
     } catch (error) {
-      setDataLoaded(false);
       setDataError(error.message);
       if (error.status === 401) {
         window.localStorage.removeItem(TOKEN_KEY);
@@ -166,7 +171,7 @@ export function Store({ children }) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.role]);
 
   useEffect(() => {
     const savedToken = window.localStorage.getItem(TOKEN_KEY);
@@ -176,9 +181,10 @@ export function Store({ children }) {
     }
     setToken(savedToken);
     apiRequest('/auth/me', { token: savedToken })
-      .then(async result => {
+      .then(result => {
         setUser(result.user);
-        await refreshData(savedToken);
+        setAuthReady(true);
+        refreshData(savedToken, result.user.role).catch(error => toast(error.message));
       })
       .catch(error => {
         if (error.status === 401) {
@@ -197,7 +203,7 @@ export function Store({ children }) {
     window.localStorage.setItem(TOKEN_KEY, result.token);
     setToken(result.token);
     setUser(result.user);
-    await refreshData(result.token);
+    await refreshData(result.token, result.user.role);
     return result.user;
   };
 
@@ -351,6 +357,29 @@ export function Store({ children }) {
     return order;
   };
 
+  const quoteOrder = body => {
+    if (!token) throw new Error('Log in to calculate the order total');
+    return apiRequest('/orders/quote', { method: 'POST', body, token });
+  };
+
+  const createInvoice = async orderId => {
+    if (!token) throw new Error('Log in to create an invoice');
+    const invoice = await apiRequest('/invoices', { method: 'POST', body: { orderId }, token });
+    await refreshData(token);
+    return invoice;
+  };
+
+  const recordPayment = async (invoiceId, method, amount) => {
+    if (!token) throw new Error('Log in to record a payment');
+    const payment = await apiRequest('/payments', {
+      method: 'POST',
+      body: { invoiceId, method, amount, status: 'COMPLETED' },
+      token,
+    });
+    await refreshData(token);
+    return payment;
+  };
+
   const cancelInvoice = async rowIndex => {
     const id = ids.invoices?.[rowIndex];
     if (!token || id == null) throw new Error('This invoice is not stored in the database');
@@ -378,7 +407,8 @@ export function Store({ children }) {
       ids, items, orders, setOrders, dashboard, dashboardError, dataError,
       toast, token, user, authReady, loading, dataLoaded,
       authenticate, logout, saveResource, deleteResource, updateTableStatus,
-      adjustInventory, updateOrderStatus, placeOrder, cancelInvoice, updatePaymentStatus,
+      adjustInventory, updateOrderStatus, placeOrder, quoteOrder, createInvoice, recordPayment,
+      cancelInvoice, updatePaymentStatus,
       apiResources: API_RESOURCES,
     }}>
       {children}

@@ -10,11 +10,11 @@ export const Table = ({ h, rows }) => (
   <div className="card tw"><table><thead><tr>{h.map((x, i) => <th key={i}>{x}</th>)}</tr></thead>
     <tbody>{rows.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}>{c}</td>)}</tr>)}</tbody></table></div>
 );
-export const Modal = ({ title, onClose, onOk, ok = 'Save', size = 'default', children }) => (
+export const Modal = ({ title, onClose, onOk, ok = 'Save', size = 'default', okDisabled = false, children }) => (
   <div className="ov" onClick={e => e.target == e.currentTarget && onClose()}>
     <div className={'card mod' + (size === 'medium' ? ' mod-medium' : '')}><b style={{ fontSize: 16 }}>{title}</b>{children}
       <div className="bar" style={{ margin: '6px 0 0', justifyContent: 'flex-end' }}>
-        <button className="btn o" onClick={onClose}>Cancel</button>{onOk && <button className="btn" onClick={onOk}>{ok}</button>}
+        <button className="btn o" onClick={onClose}>Cancel</button>{onOk && <button className="btn" disabled={okDisabled} onClick={onOk}>{ok}</button>}
       </div></div>
   </div>
 );

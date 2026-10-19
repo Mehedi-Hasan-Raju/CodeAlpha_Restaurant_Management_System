@@ -1,4 +1,4 @@
-# RestroPOS frontend
+# MHR Restaurent
 
 ## Run locally
 

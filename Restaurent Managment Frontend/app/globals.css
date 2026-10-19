@@ -239,7 +239,10 @@
   }
 
   .ov {
-    @apply fixed inset-0 z-[9] grid place-items-center p-4;
+    @apply fixed inset-0 z-[9] p-4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #0007;
   }
 
@@ -263,12 +266,28 @@
     @apply min-w-0 rounded-xl border border-[var(--bd)] p-4;
   }
 
-  .pos-addon-group label.o {
-    @apply min-h-10 border-b border-[var(--bd)] px-1 py-2;
+  .pos-addon-option {
+    @apply flex min-h-11 w-full items-center gap-3 rounded-lg border border-[var(--bd)] bg-[var(--card)] px-3 py-2 text-left;
   }
 
-  .pos-addon-group label.o:last-child {
-    @apply border-0;
+  .pos-addon-option.selected {
+    @apply border-[var(--ac)] bg-[var(--acb)];
+  }
+
+  .pos-addon-option:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .pos-addon-check {
+    @apply grid h-5 w-5 shrink-0 place-items-center rounded border border-[var(--bd)] font-bold text-[var(--ac)];
+  }
+
+  .pos-addon-option.selected .pos-addon-check {
+    @apply border-[var(--ac)] bg-[var(--ac)] text-white;
+  }
+
+  .pos-addon-price {
+    @apply ml-auto text-xs text-[var(--mu)];
   }
 
   .mod label {
@@ -352,11 +371,15 @@
 
   .menu {
     @apply mt-3 grid gap-3;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .it {
-    @apply cursor-pointer p-[10px] text-center;
+    @apply cursor-pointer p-[14px] text-center;
+  }
+
+  .it .th {
+    aspect-ratio: 1;
   }
 
   .it:hover {
@@ -553,5 +576,11 @@
 
   header input {
     @apply max-w-none;
+  }
+}
+
+@media (max-width: 600px) {
+  .menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

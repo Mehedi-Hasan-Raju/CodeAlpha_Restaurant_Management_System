@@ -1,6 +1,6 @@
 import './globals.css';
 import Shell from '@/components/Shell';
-export const metadata = { title: 'RestroPOS' };
+export const metadata = { title: 'MHR Restaurent' };
 export default function RootLayout({ children }) {
   return (
     <html lang="en">

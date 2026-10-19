@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 const AUTH = {
-  login: ['Welcome back', 'Sign in to RestroPOS', [['Email', 'email'], ['Password', 'password']], 'Login'],
+  login: ['Welcome back', 'Sign in to MHR Restaurent', [['Email', 'email'], ['Password', 'password']], 'Login'],
   register: ['Create account', 'Set up your staff login', [['Full name'], ['Email', 'email'], ['Password', 'password']], 'Register'],
   forgot: ['Forgot password', 'We will email you a reset link', [['Email', 'email']], 'Send reset link'],
 };
@@ -34,7 +34,7 @@ export default function AuthPage({ kind }) {
     }
   };
   return (
-    <form className="card auth" onSubmit={submit}><div className="logo" style={{ padding: 0 }}><i>✕</i>RestroPOS</div>
+    <form className="card auth" onSubmit={submit}><div className="logo" style={{ padding: 0 }}><i>✕</i>MHR Restaurent</div>
       <div><b style={{ fontSize: 18 }}>{t}</b><div className="sub" style={{ margin: '2px 0 0' }}>{s}</div></div>
       {f.map(x => <input key={x[0]} required className="in" placeholder={x[0]} type={x[1] || 'text'} aria-label={x[0]}
         value={values[x[0]] || ''} onChange={event => setValues(v => ({ ...v, [x[0]]: event.target.value }))} />)}

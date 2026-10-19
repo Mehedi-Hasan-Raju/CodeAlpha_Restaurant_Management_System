@@ -5,9 +5,8 @@ const { authenticate, requireRole } = require('../middleware/auth');
 const { num } = require('../utils/format');
 require('../utils/idParam')(router);
 
-router.use(authenticate);
+router.use(authenticate, requireRole('ADMIN'));
 const adminOnly = requireRole('ADMIN');
-const staff = requireRole('ADMIN', 'CASHIER');
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const blank = (v) => (v === undefined || v === null || String(v).trim() === '' ? null : String(v).trim());
@@ -63,13 +62,13 @@ router.get('/:id', asyncHandler(async (req, res) => {
   res.json({ ...c, orders: c.orders.map((o) => ({ ...o, total: num(o.total) })) });
 }));
 
-router.post('/', staff, asyncHandler(async (req, res) => {
+router.post('/', asyncHandler(async (req, res) => {
   const { data, error } = parse(req.body || {}, true);
   if (error) return res.status(400).json({ error });
   res.status(201).json(await prisma.customer.create({ data }));
 }));
 
-router.put('/:id', staff, asyncHandler(async (req, res) => {
+router.put('/:id', asyncHandler(async (req, res) => {
   const { data, error } = parse(req.body || {}, false);
   if (error) return res.status(400).json({ error });
   res.json(await prisma.customer.update({ where: { id: req.id }, data }));
