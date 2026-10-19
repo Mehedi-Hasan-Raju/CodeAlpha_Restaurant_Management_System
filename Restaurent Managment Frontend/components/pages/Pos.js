@@ -11,9 +11,10 @@ const AO = {
   Salads: [['Dressing', 0, ['Honey mustard', 'Caesar', 'Vinaigrette'], [0, 0, 0]]],
 };
 export default function Page() {
-  const { items, setOrders, toast } = useStore();
+  const { items, setOrders, toast, db } = useStore();
   const [cart, setCart] = useState([]), [cat, setCat] = useState('All'), [veg, setVeg] = useState(''), [q, setQ] = useState('');
   const [pick, setPick] = useState('Dine-in'), [pop, setPop] = useState(null), [sel, setSel] = useState({});
+  const cats = ['All', ...new Set(db.category.map(category => category[1]))];
   const list = items.filter(i => (cat == 'All' || i.cat == cat) && (!veg || i.type == veg) && i.name.toLowerCase().includes(q.toLowerCase()));
   const lines = cart.filter(l => items[l.id]);
   const sub = lines.reduce((s, l) => s + (items[l.id].price + l.ex) * l.n, 0);
@@ -23,14 +24,15 @@ export default function Page() {
   const chg = (l, d) => setCart(c => c.map(x => x == l ? { ...x, n: x.n + d } : x).filter(x => x.n > 0));
   const place = () => {
     setOrders(o => [...o, { id: 1010 + o.length, type: pick, st: 'New', who: 'Walk-in', lines: lines.map(l => [l.n, items[l.id].name + (l.op.length ? ` (${l.op.join(', ')})` : ''), items[l.id].price + l.ex]) }]);
-    setCart([]); toast('Order placed');
+    setCart([]); toast('Demo order only; it was not saved');
   };
   return (
     <div className="pos">
       <div>
+        <p className="sub">Demo mode: order submission is not connected to a backend API yet.</p>
         <div className="bar"><input className="in" placeholder="Search items..." value={q} onChange={e => setQ(e.target.value)} />
           {['Veg', 'Non-Veg'].map(t => <button key={t} className={'chip ' + (veg == t ? 'on' : '')} onClick={() => setVeg(veg == t ? '' : t)}>{t}</button>)}</div>
-        <div className="bar">{CATS.map(c => <button key={c} className={'chip ' + (c == cat ? 'on' : '')} onClick={() => setCat(c)}>{c}</button>)}</div>
+        <div className="bar">{cats.map(c => <button key={c} className={'chip ' + (c == cat ? 'on' : '')} onClick={() => setCat(c)}>{c}</button>)}</div>
         <div className="menu">{list.map(i => (
           <div key={i.id} className="card it" onClick={() => add(i)}><Thumb v={i.thumb} c="th" /><div><Badge s={i.type} /></div>
             <div style={{ fontWeight: 700, margin: '4px 0' }}>{i.name}</div><div className="pr">{money(i.price)}</div></div>))}

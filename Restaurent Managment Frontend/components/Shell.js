@@ -1,8 +1,8 @@
 'use client';
 import { Fragment } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Store } from '@/lib/store';
+import { usePathname, useRouter } from 'next/navigation';
+import { Store, useStore } from '@/lib/store';
 
 const NAV = [
   ['Restaurant', [['dashboard', '🏠', 'Dashboard'], ['pos', '🛒', 'POS'], ['floor', '🪑', 'Floor plan'], ['kitchen', '🍳', 'Kitchen display'], ['orders', '🧾', 'Orders'], ['reservations', '📅', 'Reservations']]],
@@ -11,26 +11,31 @@ const NAV = [
   ['Auth pages', [['login', '🔑', 'Login'], ['register', '📝', 'Register'], ['forgot', '❓', 'Forget password']]],
 ];
 
-export default function Shell({ children }) {
+function Workspace({ children }) {
   const p = usePathname().slice(1);
+  const router = useRouter();
+  const { user, logout } = useStore();
   const theme = () => { const r = document.documentElement; r.dataset.theme = r.dataset.theme == 'dark' ? 'light' : 'dark'; };
   return (
-    <Store>
-      <div id="app">
-        <aside>
-          <div className="logo"><i>✕</i>RestroPOS</div>
-          {NAV.map(([g, ls]) => (
-            <Fragment key={g}><h6>{g}</h6>
-              {ls.map(([k, e, n]) => <Link key={k} href={'/' + k} className={k == p ? 'on' : ''}>{e} {n}</Link>)}
-            </Fragment>
-          ))}
-        </aside>
-        <main>
-          <header><input placeholder="Type to search..." aria-label="Search" /><span className="sp" />
-            <button className="ib" onClick={theme}>🌓</button><button className="ib">🔔</button><span className="av">A</span></header>
-          <section>{children}</section>
-        </main>
-      </div>
-    </Store>
+    <div id="app">
+      <aside>
+        <div className="logo"><i>✕</i>RestroPOS</div>
+        {NAV.map(([g, ls]) => (
+          <Fragment key={g}><h6>{g}</h6>
+            {ls.map(([k, e, n]) => <Link key={k} href={'/' + k} className={k == p ? 'on' : ''}>{e} {n}</Link>)}
+          </Fragment>
+        ))}
+      </aside>
+      <main>
+        <header><input placeholder="Type to search..." aria-label="Search" /><span className="sp" />
+          <button className="ib" onClick={theme}>🌓</button><button className="ib">🔔</button>
+          {user ? <button className="ib" title={`Sign out ${user.name}`} onClick={() => { logout(); router.push('/login'); }}>↪</button> : <Link className="av" href="/login">A</Link>}</header>
+        <section>{children}</section>
+      </main>
+    </div>
   );
+}
+
+export default function Shell({ children }) {
+  return <Store><Workspace>{children}</Workspace></Store>;
 }

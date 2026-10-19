@@ -18,12 +18,22 @@ app.get('/api/health', async (req, res) => {
 });
 
 app.use('/api/auth', require('./routes/auth'));
-
+app.use('/api/categories', require('./routes/categories'));
+app.use('/api/items', require('./routes/items'));
+app.use('/api/addons', require('./routes/addons'));
+app.use('/api/coupons', require('./routes/coupons'));
+app.use('/api/tables', require('./routes/tables'));
+app.use('/api/customers', require('./routes/customers'));
+app.use('/api/reservations', require('./routes/reservations'));
+app.use('/api/orders', require('./routes/orders'));
 // 404 for unknown routes
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 
 // one place for all errors
 app.use((err, req, res, next) => {
+  if (err.code === 'P2002') return res.status(409).json({ error: 'Already exists (duplicate value)' });
+  if (err.code === 'P2025') return res.status(404).json({ error: 'Not found' });
+  if (err.code === 'P2003') return res.status(409).json({ error: 'This record is in use, or a related id is invalid' });
   console.error(err);
   res.status(500).json({ error: 'Something went wrong on the server' });
 });

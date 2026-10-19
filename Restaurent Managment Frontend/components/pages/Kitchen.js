@@ -4,7 +4,7 @@ const FLOW = ['New', 'Preparing', 'Ready', 'Served'], NEXT = { New: 'Start prepa
 export default function Page() {
   const { orders, setOrders } = useStore();
   const adv = id => setOrders(os => os.map(o => o.id == id ? { ...o, st: FLOW[FLOW.indexOf(o.st) + 1] } : o));
-  return (<><h1>Kitchen display</h1><p className="sub">Live order queue</p>
+  return (<><h1>Kitchen display</h1><p className="sub">Demo data only. The order queue is not connected to a backend API yet.</p>
     <div className="kan">{FLOW.map(s => (
       <div key={s} className={'col ' + s}><h3>{s} ({orders.filter(o => o.st == s).length})</h3>
         {orders.filter(o => o.st == s).map(o => (

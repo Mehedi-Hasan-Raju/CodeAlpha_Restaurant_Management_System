@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useStore } from '@/lib/store';
 const AUTH = {
   login: ['Welcome back', 'Sign in to RestroPOS', [['Email', 'email'], ['Password', 'password']], 'Login'],
   register: ['Create account', 'Set up your staff login', [['Full name'], ['Email', 'email'], ['Password', 'password']], 'Register'],
@@ -7,10 +9,34 @@ const AUTH = {
 };
 export default function AuthPage({ kind }) {
   const [t, s, f, b] = AUTH[kind];
+  const [values, setValues] = useState({});
+  const [busy, setBusy] = useState(false);
+  const router = useRouter();
+  const { authenticate, toast } = useStore();
+  const submit = async event => {
+    event.preventDefault();
+    if (kind === 'forgot') {
+      toast('Password reset is not available yet');
+      return;
+    }
+    setBusy(true);
+    try {
+      const credentials = kind === 'register'
+        ? { name: values['Full name'], email: values.Email, password: values.Password }
+        : { email: values.Email, password: values.Password };
+      await authenticate(kind, credentials);
+      router.push('/dashboard');
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
-    <div className="card auth"><div className="logo" style={{ padding: 0 }}><i>✕</i>RestroPOS</div>
+    <form className="card auth" onSubmit={submit}><div className="logo" style={{ padding: 0 }}><i>✕</i>RestroPOS</div>
       <div><b style={{ fontSize: 18 }}>{t}</b><div className="sub" style={{ margin: '2px 0 0' }}>{s}</div></div>
-      {f.map(x => <input key={x[0]} className="in" placeholder={x[0]} type={x[1] || 'text'} aria-label={x[0]} />)}
-      <button className="btn" style={{ borderRadius: 10, padding: 10 }}>{b}</button></div>
+      {f.map(x => <input key={x[0]} required className="in" placeholder={x[0]} type={x[1] || 'text'} aria-label={x[0]}
+        value={values[x[0]] || ''} onChange={event => setValues(v => ({ ...v, [x[0]]: event.target.value }))} />)}
+      <button className="btn" disabled={busy} style={{ borderRadius: 10, padding: 10 }}>{busy ? 'Please wait...' : b}</button></form>
   );
 }
