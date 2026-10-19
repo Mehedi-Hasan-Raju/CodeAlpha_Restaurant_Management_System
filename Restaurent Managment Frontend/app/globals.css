@@ -247,6 +247,30 @@
     @apply flex max-h-[90vh] w-full max-w-[420px] flex-col gap-[10px] overflow-auto p-5;
   }
 
+  .mod-medium {
+    @apply gap-4 p-6;
+    width: min(90vw, 800px);
+    max-width: 800px;
+  }
+
+  .pos-addon-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 14px;
+  }
+
+  .pos-addon-group {
+    @apply min-w-0 rounded-xl border border-[var(--bd)] p-4;
+  }
+
+  .pos-addon-group label.o {
+    @apply min-h-10 border-b border-[var(--bd)] px-1 py-2;
+  }
+
+  .pos-addon-group label.o:last-child {
+    @apply border-0;
+  }
+
   .mod label {
     @apply flex flex-col gap-1 text-xs font-semibold text-[var(--mu)];
   }

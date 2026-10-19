@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useStore } from '@/lib/store';
 const AUTH = {
@@ -37,6 +38,12 @@ export default function AuthPage({ kind }) {
       <div><b style={{ fontSize: 18 }}>{t}</b><div className="sub" style={{ margin: '2px 0 0' }}>{s}</div></div>
       {f.map(x => <input key={x[0]} required className="in" placeholder={x[0]} type={x[1] || 'text'} aria-label={x[0]}
         value={values[x[0]] || ''} onChange={event => setValues(v => ({ ...v, [x[0]]: event.target.value }))} />)}
-      <button className="btn" disabled={busy} style={{ borderRadius: 10, padding: 10 }}>{busy ? 'Please wait...' : b}</button></form>
+      <button className="btn" disabled={busy} style={{ borderRadius: 10, padding: 10 }}>{busy ? 'Please wait...' : b}</button>
+      <div className="sub" style={{ textAlign: 'center' }}>
+        {kind === 'login' && <>New staff member? <Link href="/register">Create an account</Link><br /><Link href="/forgot">Forgot password?</Link></>}
+        {kind === 'register' && <>Already registered? <Link href="/login">Sign in</Link></>}
+        {kind === 'forgot' && <Link href="/login">Back to sign in</Link>}
+      </div>
+    </form>
   );
 }

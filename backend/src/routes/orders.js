@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { emit } = require('../realtime');
 const prisma = require('../prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { authenticate, requireRole } = require('../middleware/auth');
@@ -118,6 +119,8 @@ router.post('/', staff, asyncHandler(async (req, res) => {
       if (tableId) await tx.diningTable.update({ where: { id: tableId }, data: { status: 'OCCUPIED' } });
       return o;
     });
+    emit('order:created', fmt(order));
+    if (tableId) emit('table:changed', { id: tableId });
     res.status(201).json(fmt(order));
   } catch (e) {
     if (e.message === 'COUPON_LIMIT') return res.status(400).json({ error: 'Coupon usage limit reached' });
@@ -179,6 +182,8 @@ router.patch('/:id/status', asyncHandler(async (req, res) => {
     }
     return u;
   });
+  emit('order:updated', fmt(updated));
+  if (o.tableId) emit('table:changed', { id: o.tableId });
   res.json(fmt(updated));
 }));
 

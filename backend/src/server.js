@@ -5,7 +5,8 @@ const prisma = require('./prisma');
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:3000' }));
+const http = require('http');
 app.use(express.json({ limit: '5mb' }));
 
 app.get('/api/health', async (req, res) => {
@@ -26,6 +27,12 @@ app.use('/api/tables', require('./routes/tables'));
 app.use('/api/customers', require('./routes/customers'));
 app.use('/api/reservations', require('./routes/reservations'));
 app.use('/api/orders', require('./routes/orders'));
+app.use('/api/invoices', require('./routes/invoices'));
+app.use('/api/payments', require('./routes/payments'));
+app.use('/api/inventory', require('./routes/inventory'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+
+
 // 404 for unknown routes
 app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
 
@@ -38,7 +45,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Something went wrong on the server' });
 });
 
-const PORT = process.env.PORT || 4000;
+
 
 async function connectDB() {
   await prisma.$connect();
@@ -48,7 +55,10 @@ async function connectDB() {
 async function startServer() {
   try {
     await connectDB();
-    app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+    const PORT = process.env.PORT || 4000;
+    const server = http.createServer(app);
+    require('./realtime').init(server);
+    server.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
   } catch (error) {
     console.error('Database connection failed:', error);
     process.exit(1);

@@ -11,7 +11,15 @@ export async function apiRequest(path, { method = 'GET', body, token } = {}) {
     cache: 'no-store',
   });
 
-  const data = await response.json().catch(() => ({}));
+  const text = await response.text();
+  let data = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch {
+      throw new Error(`The API returned an invalid response (${response.status})`);
+    }
+  }
   if (!response.ok) {
     const error = new Error(data.error || `Request failed (${response.status})`);
     error.status = response.status;

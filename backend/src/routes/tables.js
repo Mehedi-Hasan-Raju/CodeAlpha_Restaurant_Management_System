@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { emit } = require('../realtime');
 const prisma = require('../prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { authenticate, requireRole } = require('../middleware/auth');
@@ -74,7 +75,9 @@ router.put('/:id', adminOnly, asyncHandler(async (req, res) => {
 router.patch('/:id/status', staff, asyncHandler(async (req, res) => {
   const { status } = req.body || {};
   if (!STATUSES.includes(status)) return res.status(400).json({ error: 'status must be one of ' + STATUSES.join(', ') });
-  res.json(await prisma.diningTable.update({ where: { id: req.id }, data: { status } }));
+  const t = await prisma.diningTable.update({ where: { id: req.id }, data: { status } });
+  emit('table:changed', { id: t.id });
+  res.json(t);
 }));
 
 // A table that already has orders or reservations cannot be deleted (409)

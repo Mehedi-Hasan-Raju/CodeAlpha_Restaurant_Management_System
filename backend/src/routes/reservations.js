@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const { emit } = require('../realtime');
 const prisma = require('../prisma');
 const asyncHandler = require('../utils/asyncHandler');
 const { authenticate, requireRole } = require('../middleware/auth');
@@ -108,6 +109,7 @@ router.patch('/:id/status', staff, asyncHandler(async (req, res) => {
     if (status === 'CANCELLED') ops.push(prisma.diningTable.updateMany({ where: { id: r.tableId, status: 'RESERVED' }, data: { status: 'AVAILABLE' } }));
   }
   const result = await prisma.$transaction(ops);
+  if (r.tableId) emit('table:changed', { id: r.tableId });
   res.json(fmt(result[0]));
 }));
 

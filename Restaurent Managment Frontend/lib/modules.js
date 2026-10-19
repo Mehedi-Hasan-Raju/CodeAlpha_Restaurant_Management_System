@@ -2,8 +2,7 @@ import { Badge, Thumb, money } from '@/components/Ui';
 
 // One config per CRUD page: t=title, s=count label, n=item name, ch=column index used by filter chips,
 // h=table headers, f=form fields [label, type | options[] | 'img'], r=row renderer, top=optional header block.
-const S = ['Active', 'Inactive'], T = ['Dine-in', 'Takeaway', 'Delivery'], P = ['Card', 'UPI', 'Cash', 'Online'], R = ['Upcoming', 'Seated', 'Completed', 'Cancelled'];
-const CATS = ['Pizza', 'Burgers', 'Salads', 'Soups', 'Desserts', 'Drinks'];
+const S = ['Active', 'Inactive'], P = ['Card', 'UPI', 'Cash', 'Online'], R = ['Upcoming', 'Seated', 'Completed', 'Cancelled'];
 const mono = x => <span className="mono">{x}</span>;
 const lead = (a, b, c) => <div className="ln" style={{ justifyContent: 'flex-start' }}>{a}<span><b>{b}</b><br /><small className="sub">{c}</small></span></div>;
 const av = n => <span className="av" style={{ background: `hsl(${n.length * 47 % 360} 55% 50%)` }}>{n[0]}</span>;
@@ -21,11 +20,11 @@ export const MODS = {
   coupons: { t: 'Coupons', s: 'coupons', n: 'coupon', ch: 7, o: S, h: ['Code', 'Description', 'Type', 'Value', 'Min. order', 'Expires', 'Used', 'Status'],
     f: [['Code'], ['Description'], ['Type', ['Percentage', 'Flat amount']], ['Value', 'number'], ['Min. order', 'number'], ['Expires', 'date'], ['Max uses', 'number'], ['Status', S]],
     r: x => [mono(x[0]), x[1], x[2], x[3], x[4], x[5] || 'No expiry', `${x[8] || 0}/${x[6] || '∞'}`, <Badge s={x[7]} />] },
-  menu: { t: 'Menu items', s: 'items', n: 'item', ch: 2, o: CATS, h: ['Item', 'Category', 'Price', 'Type', 'Status'],
-    f: [['Item image', 'img'], ['Name'], ['Category', CATS], ['Price ($)', 'number'], ['Type', ['Veg', 'Non-Veg', 'Egg']], ['Description'], ['Status', S]],
+  menu: { t: 'Menu items', s: 'items', n: 'item', ch: 2, h: ['Item', 'Category', 'Price', 'Type', 'Status'],
+    f: [['Item image', 'img'], ['Name'], ['Category'], ['Price ($)', 'number'], ['Type', ['Veg', 'Non-Veg', 'Egg']], ['Description'], ['Status', S], ['Addon groups', 'multi']],
     r: x => [lead(<Thumb v={x[0]} />, x[1], x[5]), x[2], money(x[3]), <Badge s={x[4]} />, <Badge s={x[6] || 'Active'} />] },
   inventory: { t: 'Inventory', s: 'items', n: 'item', h: ['Item', 'Category', 'Unit', 'Stock', 'Level', 'Min / Max', 'Status', 'Adjust'],
-    f: [['Item name'], ['Category', ['Grains', 'Dairy', 'Vegetables', 'Proteins', 'Essentials']], ['Unit', ['kg', 'ltr', 'pcs']], ['Stock', 'number'], ['Min stock', 'number'], ['Max stock', 'number']],
+    f: [['Item name'], ['Category'], ['Unit', ['kg', 'g', 'ltr', 'ml', 'pcs', 'pack']], ['Stock', 'number'], ['Min stock', 'number'], ['Max stock', 'number']],
     top: rows => (
       <div className="stats">
         <div className="card"><span className="sub">Total items</span><b>{rows.length}</b></div>
@@ -40,10 +39,10 @@ export const MODS = {
     f: [['Name'], ['Phone'], ['Email', 'email']],
     r: x => [lead(av(x[0]), x[0], x[2]), x[1], x[3], '$' + x[4], x[5]] },
   invoices: { t: 'Invoices', s: 'invoices', n: 'invoice', ch: 6, o: ['Paid', 'Pending', 'Cancelled'], h: ['Invoice #', 'Customer', 'Date', 'Type', 'Payment', 'Total', 'Status'],
-    f: [['Invoice #'], ['Customer'], ['Date'], ['Type', T], ['Payment', P], ['Total ($)', 'number'], ['Status', ['Paid', 'Pending', 'Cancelled']]],
+    f: [['Order']],
     r: x => [mono(x[0]), x[1], x[2], x[3], x[4], money(x[5]), <Badge s={x[6]} />] },
   payments: { t: 'Payments', s: 'payments recorded', n: 'payment', ch: 6, o: ['Completed', 'Pending', 'Failed', 'Refunded'], h: ['Payment #', 'Customer', 'Date', 'Method', 'Invoice ref', 'Amount', 'Status'],
-    f: [['Payment #'], ['Customer'], ['Date'], ['Method', P], ['Invoice ref'], ['Amount ($)', 'number'], ['Status', ['Completed', 'Pending', 'Failed', 'Refunded']]],
+    f: [['Invoice'], ['Method', P], ['Amount ($)', 'number'], ['Status', ['Completed', 'Pending']]],
     r: x => [<b>{x[0]}</b>, x[1], x[2], x[3], mono(x[4]), money(x[5]), <Badge s={x[6]} />] },
   reservations: { t: 'Reservations', s: 'reservations', n: 'reservation', ch: 5, o: R, h: ['Guest', 'Date & time', 'Party', 'Table', 'Status'],
     f: [['Guest'], ['Date', 'date'], ['Time', 'time'], ['Party size', 'number'], ['Table', Array.from({ length: 12 }, (_, i) => 'Table ' + (i + 1))], ['Status', R]],
